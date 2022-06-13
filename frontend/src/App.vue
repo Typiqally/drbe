@@ -1,23 +1,19 @@
 <template>
   <v-app>
     <v-main>
-      <Document />
+      <DocumentComponent id="documentComponent" />
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Document from "./components/Document.vue";
+import DocumentComponent from "./components/DocumentComponent.vue";
 
 export default {
   name: "App",
 
   components: {
-    Document,
+    DocumentComponent,
   },
-
-  data: () => ({
-    //
-  }),
 };
 </script>
