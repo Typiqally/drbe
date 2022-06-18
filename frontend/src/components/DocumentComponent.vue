@@ -1,5 +1,27 @@
 <template fluid>
-  <div>
+  <div> 
+    <v-btn
+      :loading="isSelecting"
+      :disabled="loading3"
+      color="deep-purple lighten-2"
+      class="ma-2 white--text"
+      @click="handleFileImport"
+    >
+      Upload Text
+      <v-icon
+        right
+        dark
+      >
+        mdi-cloud-upload
+      </v-icon>
+      </v-btn>
+      <input 
+        ref="uploader" 
+        class="d-none" 
+        type="file" 
+        @change="onFileChanged"
+    >
+
     <v-dialog v-model="dialogSelectionWindowMenu" max-width="500">
       <v-card>
         <v-card-title>Add selected text for encryption</v-card-title>
@@ -45,18 +67,7 @@ import { TechnoKing, Manager, Monkey } from "../types/role";
 import TextFragment from "../types/textFragment";
 import rolesMap from "../types/textFragment";
 
-const textExample = `
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-      tempor incididunt ut labore et dolore magna aliqua. Id interdum velit
-      laoreet id donec ultrices tincidunt. Luctus venenatis lectus magna
-      fringilla urna porttitor rhoncus. Mi proin sed libero enim sed faucibus
-      turpis in. Sit amet nulla facilisi morbi tempus iaculis. Habitasse platea
-      dictumst quisque sagittis. In vitae turpis massa sed elementum tempus.
-      Arcu dictum varius duis at consectetur lorem donec massa sapien. Arcu dui
-      vivamus arcu felis bibendum ut tristique et. Mauris nunc congue nisi vitae
-      suscipit. Augue mauris augue neque gravida in fermentum et
-      sollicitudin.
-    `;
+let textExample = "";
 
 export default {
   // components: { SelectionWindowMenu },
@@ -102,6 +113,26 @@ export default {
       this.currentFragmentDraft = null;
       console.log(roleName);
       this.closeSelectionWindowMenu();
+    },
+    handleFileImport() {
+      // Trigger click on the FileInput
+      this.$refs.uploader.click();
+    },
+    onFileChanged(e) {
+      this.selectedFile = e.target.files[0];
+          this.readFileContent(this.selectedFile).then(content => {
+          this.textExample = content;
+          console.log(content);
+          console.log(this.textExample);
+      }).catch(error => console.log(error));
+    },
+    readFileContent(file) {
+    const reader = new FileReader()
+    return new Promise((resolve, reject) => {
+      reader.onload = event => resolve(event.target.result);
+      reader.onerror = error => reject(error);
+      reader.readAsText(file);
+    });
     },
   },
 };
