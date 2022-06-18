@@ -22,6 +22,10 @@
         @change="onFileChanged"
     >
 
+  <div>
+    <v-alert type="success" v-model="alertFinishedEncryption">
+      Document encrypted
+    </v-alert>
     <v-dialog v-model="dialogSelectionWindowMenu" max-width="500">
       <v-card>
         <v-card-title>Add selected text for encryption</v-card-title>
@@ -54,7 +58,9 @@
         </textarea>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="deep-purple lighten-2"> Finish Encrypting </v-btn>
+        <v-btn color="deep-purple lighten-2" @click="finishEncryption">
+          Finish Encrypting
+        </v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -72,6 +78,7 @@ let textExample = "";
 export default {
   // components: { SelectionWindowMenu },
   data: () => ({
+    alertFinishedEncryption: false,
     dialogSelectionWindowMenu: false,
     selectedText: null,
     textSelectedForEncryption: "",
@@ -113,6 +120,9 @@ export default {
       this.currentFragmentDraft = null;
       console.log(roleName);
       this.closeSelectionWindowMenu();
+    },
+    finishEncryption() {
+      this.alertFinishedEncryption = true;
     },
     handleFileImport() {
       // Trigger click on the FileInput
