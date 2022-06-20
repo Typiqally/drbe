@@ -48,9 +48,6 @@ mod tests {
     use near_sdk::MockedBlockchain;
     use near_sdk::{testing_env, VMContext};
 
-    // part of writing unit tests is setting up a mock context
-    // in this example, this is only needed for env::log in the contract
-    // this is also a useful list to peek at when wondering what's available in env::*
     fn get_context(input: Vec<u8>, is_view: bool) -> VMContext {
         VMContext {
             current_account_id: "alice.testnet".to_string(),
