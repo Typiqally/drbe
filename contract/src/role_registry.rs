@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn given_contract_when_create_role_then_role_is_created() {
+    fn given_default_registry_when_create_role_then_role_is_created() {
         // Arrange
         let context = get_context(vec![], false);
         testing_env!(context);
