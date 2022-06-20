@@ -89,6 +89,21 @@ mod tests {
     }
 
     #[test]
+    fn given_no_existing_roles_when_get_roles_then_return_empty_vec() {
+        // Arrange
+        let context = get_context(vec![], true);
+        testing_env!(context);
+
+        let contract = RoleRegistry::default();
+
+        // Act
+        let roles = contract.get_roles();
+
+        // Assert
+        assert_eq!(0, roles.len());
+    }
+
+    #[test]
     fn given_default_registry_when_create_role_then_role_is_created() {
         // Arrange
         let context = get_context(vec![], false);
