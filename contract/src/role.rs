@@ -5,10 +5,10 @@ use near_sdk::{env, near_bindgen};
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Role {
-    name: String,
-    owner_account_id: String,
-    public_key: String,
-    encrypted_private_keys: LookupMap<String, String>,
+    pub name: String,
+    pub owner_account_id: String,
+    pub public_key: String,
+    pub encrypted_private_keys: LookupMap<String, String>,
 }
 
 impl Default for Role {
