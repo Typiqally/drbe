@@ -25,7 +25,7 @@ impl RoleRegistry {
         return self.roles.to_vec();
     }
 
-    pub fn create_role(&mut self, name: String, public_key: String) {
+    pub fn create_role(&mut self, name: String, public_key: Vec<u8>) {
         let account_id = env::signer_account_id();
 
         let role = Role {
@@ -73,8 +73,9 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
+        let mock_public_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
         let mut contract = RoleRegistry::default();
-        contract.create_role("test_name".to_string(), "test_public_key".to_string());
+        contract.create_role("test_name".to_string(), mock_public_key.clone());
 
         // Act
         let roles = contract.get_roles();
@@ -82,7 +83,7 @@ mod tests {
         // Assert
         let role = roles.get(0).unwrap();
         assert_eq!("test_name".to_string(), role.name);
-        assert_eq!("test_public_key".to_string(), role.public_key);
+        assert_eq!(mock_public_key.clone(), role.public_key);
     }
 
     #[test]
@@ -106,15 +107,16 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
+        let mock_public_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
         let mut contract = RoleRegistry::default();
 
         // Act
-        contract.create_role("test_name".to_string(), "test_public_key".to_string());
+        contract.create_role("test_name".to_string(), mock_public_key.clone());
 
         // Assert
         let roles = contract.get_roles();
         let role = roles.get(0).unwrap();
         assert_eq!("test_name".to_string(), role.name);
-        assert_eq!("test_public_key".to_string(), role.public_key);
+        assert_eq!(mock_public_key.clone(), role.public_key);
     }
 }

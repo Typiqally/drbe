@@ -7,8 +7,8 @@ use near_sdk::near_bindgen;
 pub struct Role {
     pub name: String,
     pub owner_account_id: String,
-    pub public_key: String,
-    pub encrypted_private_keys: LookupMap<String, String>,
+    pub public_key: Vec<u8>,
+    pub encrypted_private_keys: LookupMap<String, Vec<u8>>,
 }
 
 impl Default for Role {
@@ -16,7 +16,7 @@ impl Default for Role {
         Self {
             name: String::new(),
             owner_account_id: String::new(),
-            public_key: String::new(),
+            public_key: Vec::new(),
             encrypted_private_keys: LookupMap::new(b"r".to_vec()),
         }
     }
@@ -32,11 +32,11 @@ impl Role {
         return self.owner_account_id.clone();
     }
 
-    pub fn get_public_key(&self) -> String {
+    pub fn get_public_key(&self) -> Vec<u8> {
         return self.public_key.clone();
     }
 
-    pub fn get_encrypted_private_key(&self, account_id: String) -> Option<String> {
+    pub fn get_encrypted_private_key(&self, account_id: String) -> Option<Vec<u8>> {
         return self.encrypted_private_keys.get(&account_id);
     }
 }
@@ -111,8 +111,9 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
+        let mock_public_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
         let contract = Role {
-            public_key: "test".to_string(),
+            public_key: mock_public_key.clone(),
             ..Default::default()
         };
 
@@ -120,7 +121,7 @@ mod tests {
         let public_key = contract.get_public_key();
 
         // Assert
-        assert_eq!("test".to_string(), public_key);
+        assert_eq!(mock_public_key.clone(), public_key);
     }
 
     #[test]
@@ -129,8 +130,9 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
-        let mut map = LookupMap::<String, String>::new(b"r".to_vec());
-        map.insert(&"francis.near".to_string(), &"test".to_string());
+        let mock_private_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let mut map = LookupMap::<String, Vec<u8>>::new(b"r".to_vec());
+        map.insert(&"francis.near".to_string(), &mock_private_key);
 
         let contract = Role {
             encrypted_private_keys: map,
@@ -143,7 +145,7 @@ mod tests {
             .unwrap();
 
         // Assert
-        assert_eq!("test".to_string(), encrypted_private_key);
+        assert_eq!(mock_private_key, encrypted_private_key);
     }
 
     #[test]
