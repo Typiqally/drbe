@@ -28,6 +28,10 @@ impl Role {
         return self.name.clone();
     }
 
+    pub fn get_owner_account_id(&self) -> String {
+        return self.owner_account_id.clone();
+    }
+
     pub fn get_public_key(&self) -> String {
         return self.public_key.clone();
     }
@@ -81,6 +85,24 @@ mod tests {
 
         // Act
         let name = contract.get_name();
+
+        // Assert
+        assert_eq!("test".to_string(), name);
+    }
+
+    #[test]
+    fn given_role_when_get_owner_account_id_then_return_owner_account_id() {
+        // Arrange
+        let context = get_context(vec![], false);
+        testing_env!(context);
+
+        let contract = Role {
+            owner_account_id: "test".to_string(),
+            ..Default::default()
+        };
+
+        // Act
+        let name = contract.get_owner_account_id();
 
         // Assert
         assert_eq!("test".to_string(), name);
