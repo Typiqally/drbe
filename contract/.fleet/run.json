@@ -8,7 +8,7 @@
         {
             "type": "cargo",
             "name": "Test",
-            "cargoArgs": ["test"], // optional
+            "cargoArgs": ["test"],
         }
     ]
 }
