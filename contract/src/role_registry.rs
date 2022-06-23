@@ -26,7 +26,7 @@ impl RoleRegistry {
     }
 
     pub fn create_role(&mut self, name: String, public_key: Vec<u8>) {
-        let account_id = env::signer_account_id();
+        let account_id = env::current_account_id();
 
         let role = Role {
             name,
