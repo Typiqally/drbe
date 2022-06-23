@@ -1,7 +1,9 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
 use near_sdk::collections::Vector;
+use near_sdk::serde::{Serialize, Serializer};
 use near_sdk::{env, near_bindgen};
+use near_sdk::serde::ser::SerializeStruct;
 
 use crate::role::Role;
 
@@ -9,6 +11,20 @@ use crate::role::Role;
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct RoleRegistry {
     pub roles: Vector<Role>,
+}
+
+impl Serialize for Role {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Role", 4)?;
+        state.serialize_field("name", &self.name);
+        state.serialize_field("owner_account_id", &self.owner_account_id);
+        state.serialize_field("public_key", &self.public_key.to_vec());
+        state.end()
+    }
 }
 
 impl Default for RoleRegistry {
@@ -27,13 +43,16 @@ impl RoleRegistry {
 
     pub fn create_role(&mut self, name: String, public_key: Vec<u8>) {
         let account_id = env::current_account_id();
-
-        let role = Role {
+        let mut role = Role {
             name,
             owner_account_id: account_id.clone(),
-            public_key,
+            public_key: Vector::new(b"p".to_vec()),
             encrypted_private_keys: LookupMap::new(b"r".to_vec()),
         };
+
+        for byte in public_key {
+            role.public_key.push(&byte);
+        }
 
         self.roles.push(&role);
     }
@@ -83,7 +102,7 @@ mod tests {
         // Assert
         let role = roles.get(0).unwrap();
         assert_eq!("test_name".to_string(), role.name);
-        assert_eq!(mock_public_key.clone(), role.public_key);
+        assert_eq!(mock_public_key.clone(), role.public_key.to_vec());
     }
 
     #[test]
@@ -117,6 +136,6 @@ mod tests {
         let roles = contract.get_roles();
         let role = roles.get(0).unwrap();
         assert_eq!("test_name".to_string(), role.name);
-        assert_eq!(mock_public_key.clone(), role.public_key);
+        assert_eq!(mock_public_key.clone(), role.public_key.to_vec());
     }
 }

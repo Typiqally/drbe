@@ -1,5 +1,6 @@
+use std::borrow::Borrow;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::{Vector, LookupMap};
 use near_sdk::{env, near_bindgen};
 
 #[near_bindgen]
@@ -7,8 +8,8 @@ use near_sdk::{env, near_bindgen};
 pub struct Role {
     pub name: String,
     pub owner_account_id: String,
-    pub public_key: Vec<u8>,
-    pub encrypted_private_keys: LookupMap<String, Vec<u8>>,
+    pub public_key: Vector<u8>,
+    pub encrypted_private_keys: LookupMap<String, Vector<u8>>,
 }
 
 impl Default for Role {
@@ -16,7 +17,7 @@ impl Default for Role {
         Self {
             name: String::new(),
             owner_account_id: String::new(),
-            public_key: Vec::new(),
+            public_key: Vector::new(b"p".to_vec()),
             encrypted_private_keys: LookupMap::new(b"r".to_vec()),
         }
     }
@@ -33,13 +34,13 @@ impl Role {
     }
 
     pub fn get_public_key(&self) -> Vec<u8> {
-        return self.public_key.clone();
+        return self.public_key.to_vec();
     }
 
     pub fn get_encrypted_private_key(&self) -> Option<Vec<u8>> {
         let account_id = env::current_account_id();
 
-        return self.encrypted_private_keys.get(&account_id);
+        return self.encrypted_private_keys.get(&account_id).map(|v| v.to_vec());
     }
 
     pub fn add_encrypted_private_key(
@@ -47,8 +48,13 @@ impl Role {
         account_id: String,
         encrypted_private_key: Vec<u8>,
     ) {
-        self.encrypted_private_keys
-            .insert(&account_id, &encrypted_private_key);
+        let mut vector = Vector::<u8>::new(b"p");
+
+        for byte in encrypted_private_key {
+            vector.push(&byte);
+        }
+
+        self.encrypted_private_keys.insert(&account_id, &vector);
     }
 }
 
@@ -122,9 +128,15 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
-        let mock_public_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let mock_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let mut mock_vector = Vector::<u8>::new(b"p");
+
+        for byte in mock_key.clone() {
+            mock_vector.push(&byte);
+        }
+
         let contract = Role {
-            public_key: mock_public_key.clone(),
+            public_key: mock_vector,
             ..Default::default()
         };
 
@@ -132,7 +144,7 @@ mod tests {
         let public_key = contract.get_public_key();
 
         // Assert
-        assert_eq!(mock_public_key.clone(), public_key);
+        assert_eq!(mock_key.clone(), public_key);
     }
 
     #[test]
@@ -141,9 +153,15 @@ mod tests {
         let context = get_context(vec![], false);
         testing_env!(context);
 
-        let mock_private_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        let mut map = LookupMap::<String, Vec<u8>>::new(b"r".to_vec());
-        map.insert(&"alice.testnet".to_string(), &mock_private_key);
+        let mock_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let mut mock_vector = Vector::<u8>::new(b"p");
+
+        for byte in mock_key.clone() {
+            mock_vector.push(&byte);
+        }
+
+        let mut map = LookupMap::<String, Vector<u8>>::new(b"r".to_vec());
+        map.insert(&"alice.testnet".to_string(), &mock_vector);
 
         let contract = Role {
             encrypted_private_keys: map,
@@ -154,7 +172,7 @@ mod tests {
         let encrypted_private_key = contract.get_encrypted_private_key().unwrap();
 
         // Assert
-        assert_eq!(mock_private_key, encrypted_private_key);
+        assert_eq!(mock_key.clone(), encrypted_private_key);
     }
 
     #[test]
