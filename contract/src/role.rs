@@ -1,6 +1,6 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
-use near_sdk::near_bindgen;
+use near_sdk::{env, near_bindgen};
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -36,8 +36,19 @@ impl Role {
         return self.public_key.clone();
     }
 
-    pub fn get_encrypted_private_key(&self, account_id: String) -> Option<Vec<u8>> {
+    pub fn get_encrypted_private_key(&self) -> Option<Vec<u8>> {
+        let account_id = env::current_account_id();
+
         return self.encrypted_private_keys.get(&account_id);
+    }
+
+    pub fn add_encrypted_private_key(
+        &mut self,
+        account_id: String,
+        encrypted_private_key: Vec<u8>,
+    ) {
+        self.encrypted_private_keys
+            .insert(&account_id, &encrypted_private_key);
     }
 }
 
@@ -132,7 +143,7 @@ mod tests {
 
         let mock_private_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
         let mut map = LookupMap::<String, Vec<u8>>::new(b"r".to_vec());
-        map.insert(&"francis.near".to_string(), &mock_private_key);
+        map.insert(&"alice.testnet".to_string(), &mock_private_key);
 
         let contract = Role {
             encrypted_private_keys: map,
@@ -140,9 +151,7 @@ mod tests {
         };
 
         // Act
-        let encrypted_private_key = contract
-            .get_encrypted_private_key("francis.near".to_string())
-            .unwrap();
+        let encrypted_private_key = contract.get_encrypted_private_key().unwrap();
 
         // Assert
         assert_eq!(mock_private_key, encrypted_private_key);
@@ -156,9 +165,27 @@ mod tests {
         let contract = Role::default();
 
         // Act
-        let encrypted_private_key = contract.get_encrypted_private_key("francis.near".to_string());
+        let encrypted_private_key = contract.get_encrypted_private_key();
 
         // Assert
         assert_eq!(None, encrypted_private_key);
+    }
+
+    #[test]
+    fn given_signer_when_add_encrypted_private_key_for_signer_then_encrypted_private_key_is_added()
+    {
+        // Arrange
+        let context = get_context(vec![], false);
+        testing_env!(context);
+
+        let mock_private_key = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let mut contract = Role::default();
+
+        // Act
+        contract.add_encrypted_private_key("alice.testnet".to_string(), mock_private_key.clone());
+
+        // Assert
+        let encrypted_private_key = contract.get_encrypted_private_key().unwrap();
+        assert_eq!(mock_private_key, encrypted_private_key);
     }
 }
